@@ -1,16 +1,28 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 This analysis required the following packages to be installed and loaded:
 
 - dplyr
 - ggplot2
-```{r libraries, results=FALSE}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(ggplot2)
 ```
 
@@ -20,9 +32,17 @@ This analysis expected:
 
 - a file called activity.zip to be in the present working directory
 - to unzip plus read in the .csv containted in the .zip.
-```{r loading}
+
+```r
 raw_data = read.csv(unz('activity.zip', 'activity.csv'))
 str(raw_data)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 
@@ -35,7 +55,8 @@ This does not necessarily indicate a measurement of zero, and indeed some observ
 For the purpose of this exercise, these NA values were removed, therefore the mean is calculated across only the intervals that have a measured value.
 
 - Calculate total steps per day:
-```{r, results=FALSE}
+
+```r
 # Empty vector to hold a total steps variable for each day
 sums = vector()
 # Loop over each unique day and sum the steps variable for all the intervals on that day (ignoring NA values), storing the result in the new vector
@@ -44,20 +65,25 @@ for(day in unique(select(raw_data, date))[,1]){
 }
 ```
 - Make a histogram of the total number of steps taken each day:
-```{r}
+
+```r
 hist(sums, main='Histogram of steps per day', xlab='Steps', ylab='Days')
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 - Calculate the mean steps per day:
-```{r, results=FALSE}
+
+```r
 day_steps_mean = mean(sums)
 ```
 - Calculate the median steps per day:
-```{r,results=FALSE}
+
+```r
 day_steps_median = median(sums)
 ```
-The calculated mean is `r as.integer(day_steps_mean)` (`r day_steps_mean`).
+The calculated mean is 9354 (9354.2295082).
 
-The calculated median steps per day is `r day_steps_median`.
+The calculated median steps per day is 10395.
 
 
 ## What is the average daily activity pattern?
@@ -68,7 +94,8 @@ This new data.frame is then bound to a collector data.frame (average_data).
 Once all of the data points are gathered, a plot is created and the observation with the highest value for the 'steps' variable is determined.
 
 - Calculate averages:
-```{r}
+
+```r
 # Create a new, empty, data.frame to hold results
 average_data = data.frame()
 # Determine the number of days in the data set
@@ -81,35 +108,42 @@ for(int in unique(select(raw_data, interval))[,1]){
 }
 ```
 - Generate the plot:
-```{r}
+
+```r
 plot(average_data, type='l', main='Average Daily Activity Pattern', xlab='Time Interval', ylab='Average Steps')
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 - Determine the interval with the higest average step count:
-```{r}
+
+```r
 highest_observation = average_data[max(average_data$steps),]
 ```
-Time interval `r highest_observation$interval` has the highest average step measurement at `r round(highest_observation$steps, 2)` steps.
+Time interval 1450 has the highest average step measurement at 37.9 steps.
 
 
 ## Imputing missing values
 Some of the observations in the raw_data are missing values - i.e. the values are NA.
 
 - Calculate the number of observations with NA values:
-```{r}
+
+```r
 NAs = length(filter(raw_data, is.na(steps))$steps)
 ```
-There are `r NAs` observations with NA values.
+There are 2304 observations with NA values.
 
-As these observations form `r 100/length(raw_data$steps)*NAs`% of the overall observations, which could be significant, the NAs will be imputed, the calculations from the first question will be re-run, and, the results compared in order to determine if there is a statistical significance to the presence of NA values.
+As these observations form 13.1147541% of the overall observations, which could be significant, the NAs will be imputed, the calculations from the first question will be re-run, and, the results compared in order to determine if there is a statistical significance to the presence of NA values.
 
 The NA values will be imputed with the average steps across all non-NA observations for that given interval across all days.
 
 - Copy the raw data set (raw_data) into a new data set (data):
-```{r}
+
+```r
 data = raw_data
 ```
 - Impute NA values:
-```{r}
+
+```r
 # Iterate over every observation in the data set
 for(i in c(1:length(raw_data$steps))){
     # If the steps variable is NA, impute with the average steps accross all days for that interval
@@ -119,17 +153,35 @@ for(i in c(1:length(raw_data$steps))){
 }
 ```
 - Show that the original data set contained NAs:
-```{r}
+
+```r
 print(head(filter(raw_data, is.na(steps))))
 ```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
 - Show that the new imputed data set does not contain NAs:
-```{r}
+
+```r
 print(head(filter(data, is.na(steps))))
+```
+
+```
+## [1] steps    date     interval
+## <0 rows> (or 0-length row.names)
 ```
 In order to generate a histogram of the imputed data set, the process from question 1 is repeated:
 
 - Calculate total steps per day:
-```{r}
+
+```r
 # Empty vector to hold a total steps variable for each day
 imputed_sums = vector()
 # Loop over each unique day and sum the steps variable for all the intervals on that day (ignoring NA values), storing the result in the new vector
@@ -138,41 +190,56 @@ for(day in unique(select(data, date))[,1]){
 }
 ```
 - Make a histogram of the total number of steps taken each day:
-```{r}
+
+```r
 hist(imputed_sums, main='Histogram of steps per day (with imputation)', xlab='Steps', ylab='Days')
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
+
 - Calculate the mean steps per day:
-```{r, results=FALSE}
+
+```r
 imputed_day_steps_mean = mean(imputed_sums)
 ```
 - Calculate the median steps per day:
-```{r,results=FALSE}
+
+```r
 imputed_day_steps_median = median(imputed_sums)
 ```
-The calculated mean is `r as.integer(day_steps_mean, 2)` (`r day_steps_mean`).
+The calculated mean is 9354 (9354.2295082).
 
-The calculated mean is `r as.integer(imputed_day_steps_mean)` (`r imputed_day_steps_mean`) after imputing NA values.
+The calculated mean is 10580 (1.0580984\times 10^{4}) after imputing NA values.
 
-Imputing has `r if(day_steps_mean==imputed_day_steps_mean){'NO'}else{'A MEASURABLE'}` affect on mean calculations.
+Imputing has A MEASURABLE affect on mean calculations.
 
-The calculated median steps per day is `r day_steps_median`.
+The calculated median steps per day is 10395.
 
-The calculated median steps per day is `r imputed_day_steps_median` after imputing NA values.
+The calculated median steps per day is 10395 after imputing NA values.
 
-Imputing has `r if(day_steps_median==imputed_day_steps_median){'NO'}else{'A MEASURABLE'}` affect on median calculations.
+Imputing has NO affect on median calculations.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 In order to differentiate weekday data from weekend data:
 
 - add a column to the imputed data set, as a factor with two levels of 'weekday' and 'weekend':
-```{r}
+
+```r
 data = cbind(data, data.frame('day_type'=factor(NA, c('weekday', 'weekend'))))
 str(data)
 ```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : num  1.4918 0.2951 0.1148 0.1311 0.0656 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ day_type: Factor w/ 2 levels "weekday","weekend": NA NA NA NA NA NA NA NA NA NA ...
+```
 - Calculate day_type value for each observation:
-```{r}
+
+```r
 # Loop over each observation in the imputed data set
 for(i in c(1:length(data$steps))){
     # Determine the day associated with the date value for the iteration
@@ -186,17 +253,30 @@ for(i in c(1:length(data$steps))){
 }
 head(data)
 ```
+
+```
+##        steps       date interval day_type
+## 1 1.49180328 2012-10-01        0  weekday
+## 2 0.29508197 2012-10-01        5  weekday
+## 3 0.11475410 2012-10-01       10  weekday
+## 4 0.13114754 2012-10-01       15  weekday
+## 5 0.06557377 2012-10-01       20  weekday
+## 6 1.81967213 2012-10-01       25  weekday
+```
 - create a new data.frame (average_data) to store the average value for each interval for weekdays and weekends:
-```{r}
+
+```r
 average_data = data.frame()
 ```
 - determine the number of weekdays and weekend days (for later use in determining averages):
-```{r}
+
+```r
 num_weekdays = length(unique(filter(data, day_type=='weekday')$date))
 num_weekend_days = length(unique(filter(data, day_type=='weekend')$date))
 ```
 - Calculate averages and add to the new data.frame:
-```{r}
+
+```r
 #Loop over all the unique intervals
 for(int in unique(select(data, interval))[,1]){
     # For each interval sum all the interval values across weekdays, then separately, across weekend days
@@ -209,6 +289,9 @@ for(int in unique(select(data, interval))[,1]){
 }
 ```
 - Finally, generate a line plot to compare weekday to weekend data 
-```{r}
+
+```r
 print(qplot(interval, steps, data=average_data, main='Average steps per interval (Weekdays vs. Weekends)', xlab='Interval', ylab='Average Steps', geom='line', facets=day_type~.))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-22-1.png) 
